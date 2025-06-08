@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package shortener;
+
+service ShortenerService {
+  rpc CreateShortUrl(CreateShortUrlRequest) returns (CreateShortUrlResponse);
+  rpc GetOriginalUrl(GetOriginalUrlRequest) returns (GetOriginalUrlResponse);
+}
+
+message CreateShortUrlRequest {
+  string originalUrl = 1;  // ← Đổi thành camelCase
+}
+
+message CreateShortUrlResponse {
+  string shortCode = 1;    // ← Đổi thành camelCase
+  string shortUrl = 2;     // ← Đổi thành camelCase
+}
+
+message GetOriginalUrlRequest {
+  string shortCode = 1;    // ← Đổi thành camelCase
+}
+
+message GetOriginalUrlResponse {
+  string originalUrl = 1;  // ← Đổi thành camelCase
+}
