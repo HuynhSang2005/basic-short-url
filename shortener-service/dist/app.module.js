@@ -10,11 +10,13 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const shortener_controller_1 = require("./shortener.controller");
 const shortener_service_1 = require("./shortener.service");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
+        imports: [config_1.ConfigModule],
         controllers: [shortener_controller_1.ShortenerController],
         providers: [shortener_service_1.ShortenerService],
     })
