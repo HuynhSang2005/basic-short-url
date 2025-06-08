@@ -1,44 +1,16 @@
 version: '3.8'
-
 services:
-  postgres_db:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    restart: unless-stopped
+  postgres:
+    image: postgres:15
+    container_name: url_shortener_db
     environment:
-      POSTGRES_USER: user        # username
-      POSTGRES_PASSWORD: password  # password
-      POSTGRES_DB: shortener     # database name
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: shortener
     ports:
-      - "5003:5432" # Ánh xạ cổng của container ra máy thật để kết nối
+      - "5004:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Lưu trữ dữ liệu để không bị mất khi restart
-
-  # main service với logic rút gọn URL
-  shortener_service:
-    build:
-      context: ./shortener-service 
-      dockerfile: Dockerfile
-    container_name: shortener_service
-    restart: unless-stopped
-    depends_on:
-      - postgres_db 
-    ports:
-      - "50051:50051" # port gRPC
-    environment:
-      DATABASE_URL: "postgresql://user:password@postgres_db:5003/shortener?schema=public"
-
-  # Dịch vụ API Gateway (chúng ta sẽ xây dựng ở Giai đoạn 2)
-  api_gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api_gateway
-    restart: unless-stopped
-    depends_on:
-      - shortener_service
-    ports:
-      - "3000:3000" # port REST API
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:

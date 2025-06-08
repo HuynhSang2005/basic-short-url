@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Url {
-  id         Int      @id @default(autoincrement())
-  shortCode  String   @unique @map("short_code")
-  longUrl    String   @map("long_url")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id          Int      @id @default(autoincrement())
+  originalUrl String   @map("original_url")
+  shortCode   String   @unique @map("short_code")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("urls")
 }

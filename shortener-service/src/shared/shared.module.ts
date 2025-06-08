@@ -3,8 +3,8 @@ import { PrismaService } from './services/prisma.service';
 
 
 @Module({
-  imports: [],
   controllers: [],
   providers: [PrismaService],
+  exports: [PrismaService],
 })
-export class AppModule {}
+export class SharedModule {}
