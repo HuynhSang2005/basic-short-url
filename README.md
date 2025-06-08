@@ -32,7 +32,7 @@
 │   API Gateway   │ ──────────> │ Shortener Service │ ──────────> │ PostgreSQL  │
 │   (Port 3000)   │   Proto     │   (Port 50051)    │             │ (Port 5432) │
 │   HTTP REST     │             │   gRPC Server     │             │  Database   │
-└─────────────────┘             └──────────────────┘             └─────────────┘
+└─────────────────┘             └──────────────────┘              └─────────────┘
 ```
 
 ### Thành phần hệ thống:
