@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package shortener;
+
+service Shortener {
+  rpc CreateShortURL(CreateShortURLRequest) returns (CreateShortURLResponse);
+  rpc GetLongURL(GetLongURLRequest) returns (GetLongURLResponse);
+}
+
+message CreateShortURLRequest { string long_url = 1; }
+message CreateShortURLResponse { string short_code = 1; }
+message GetLongURLRequest { string short_code = 1; }
+message GetLongURLResponse { string long_url = 1; }
