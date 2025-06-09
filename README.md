@@ -23,24 +23,36 @@
 
 ## 📋 Tổng quan
 
-Đây là một dự án mini URL Shortener được xây dựng để tôi tự học về **gRPC** và **Microservices Architecture**. Project sử dụng NestJS, PostgreSQL, và Protocol Buffers để tạo ra một hệ thống rút gọn URL hiệu quả.
+Đây là một dự án mini project URL Shortener (giống như bit.ly) giúp rút gọn link, được xây dựng để tôi tự học về **gRPC** và **Microservices Architecture**. Project sử dụng **NestJS**, **PostgreSQL**, và **Protocol Buffers** để tạo ra một hệ thống rút gọn URL hiệu quả.
 
+> **Bạn là người mới giống tôi và muốn học về gRPC, microservice cùng với NestJS?**  
+> Đừng lo! README này sẽ giải thích rõ các khái niệm như microservice, gRPC, NestJS và cách chúng kết hợp với nhau.
+
+### 💡 Microservices, gRPC, và NestJS là gì?
+
+- **Microservices:**  
+  Là cách chia ứng dụng lớn thành các “service nhỏ”, mỗi service sẽ đảm nhiệm một chức năng riêng biệt. Mỗi service có thể phát triển, triển khai và có khả năng mở rộng độc lập tốt.
+- **gRPC:**  
+  Là giao thức giao tiếp giữa các service, nhanh hơn REST nhờ sử dụng HTTP/2 và Protocol Buffers (là binary nên nhẹ và nhanh).
+- **NestJS:**  
+  Một framework cho Node.js, giúp xây dựng các ứng dụng server-side hiện đại, hỗ trợ tốt cho microservices và gRPC.
+---
 ## 🏗️ Kiến trúc hệ thống
 
 ```
-┌─────────────────┐    gRPC     ┌───────────────────┐    Prisma   ┌─────────────┐
-│   API Gateway   │ ──────────> │ Shortener Service │ ──────────> │ PostgreSQL  │
-│   (Port 3000)   │   Proto     │   (Port 50051)    │             │ (Port 5432) │
-│   HTTP REST     │             │   gRPC Server     │             │  Database   │
-└─────────────────┘             └───────────────────┘             └─────────────┘
+┌─────────────────┐    gRPC     ┌──────────────────┐    Prisma   ┌─────────────┐
+│   API Gateway   │ ──────────> │ Shortener Service│ ──────────> │ PostgreSQL  │
+│   (Port 3000)   │   Proto     │   (Port 50051)   │             │ (Port 5432) │
+│   HTTP REST     │             │   gRPC Server    │             │  Database   │
+└─────────────────┘             └──────────────────┘             └─────────────┘
 ```
 
 ### Thành phần hệ thống:
 
-1. **API Gateway**: HTTP REST API server (NestJS)
-2. **Shortener Service**: gRPC microservice (NestJS) 
-3. **Database**: PostgreSQL với Prisma ORM
-4. **Proto Contract**: Protocol Buffers definitions
+1. **API Gateway:** Nhận request HTTP từ client, chuyển tiếp qua gRPC.
+2. **Shortener Service:** Xử lý logic rút gọn URL, giao tiếp với database.
+3. **Database(PostgreSQL với Prisma ORM)**: Lưu trữ data URL.
+4. **Proto Contract:** Định nghĩa giao tiếp giữa các service bằng Protocol Buffers.
 
 ## 📁 Cấu trúc thư mục
 
@@ -90,6 +102,11 @@ JSON Response ← HTTP Response ← gRPC Response ← Success
  short_code,     shortUrl}       shortUrl}
  original_url}
 ```
+1. Client gửi request POST `/urls` với URL gốc.
+2. API Gateway nhận, gửi gRPC đến Shortener Service.
+3. Shortener Service tạo mã rút gọn (short code) bằng thư viện `nanoid`.
+4. Lưu thông tin vào database.
+5. Trả về short URL cho client.
 
 ### 2. Redirect Short URL
 ```
@@ -102,6 +119,11 @@ GET /:code      gRPC Call      Lookup URL     Find by code
 to original    res.redirect()  {originalUrl}   return url.originalUrl
 ```
 
+1. Client truy cập `/aB3fGh8k`.
+2. API Gateway gửi gRPC đến Shortener Service để lấy URL gốc.
+3. Shortener Service truy vấn database, trả về URL gốc.
+4. API Gateway chuyển hướng (redirect) client đến URL gốc.
+
 ## 🔧 Cách hoạt động của Short URL
 
 ### 1. Algorithm tạo Short Code
@@ -111,7 +133,7 @@ import { nanoid } from 'nanoid';
 const shortCode = nanoid(8); // Generates: "V1StGXR8"
 ```
 
-- **nanoid**: Tạo ID ngẫu nhiên, URL-safe
+- **nanoid**: Tạo ID ngẫu nhiên, URL-safe và tôi sử dụng version 3.3.11 vì nó ổn định hơn so với version 5 hiện tại.
 - **8 characters**: ~2.8 tỷ combinations (62^8)
 - **Collision-resistant**: Rất ít khả năng trùng lặp
 
@@ -162,49 +184,75 @@ message CreateShortUrlResponse {
 }
 ```
 
-### gRPC vs HTTP REST
-| Aspect | gRPC | HTTP REST |
-|--------|------|-----------|
-| **Protocol** | HTTP/2 | HTTP/1.1 |
-| **Format** | Binary (Protocol Buffers) | JSON |
-| **Performance** | ⚡ Faster | 🐌 Slower |
-| **Type Safety** | ✅ Strong typing | ❌ Runtime validation |
-| **Browser Support** | ❌ Limited | ✅ Universal |
-| **Streaming** | ✅ Bidirectional | ❌ Limited |
+## 🎯 Những gì tôi học được và kinh nghiệm rút ra
 
-## 🎯 Những gì tôi học được
+### 1. Tại sao tôi dùng gRPC thay vì REST?
 
-### 1. **Microservices Architecture**
-- **Service Separation**: Tách biệt business logic và API layer
-- **Independent Deployment**: Mỗi service có thể deploy riêng biệt
-- **Technology Diversity**: Có thể dùng ngôn ngữ khác cho từng service
-- **Fault Isolation**: Lỗi ở một service không ảnh hưởng service khác
+| Tiêu chí         | gRPC (Protocol Buffers) | REST (JSON)         |
+|------------------|------------------------|---------------------|
+| Tốc độ           | ⚡ Rất nhanh            | 🐢 Chậm hơn          |
+| Định dạng        | Binary (rất nhẹ)     | Plain-text (JSON)      |
+| Kiểm tra kiểu    | Có, tự động sinh code  | Không, phải tự validate |
+| Hỗ trợ streaming | Có đến 4 loại và native                    | Hạn chế|
+| Hỗ trợ trình duyệt| Chưa tốt lắm              | Rất tốt             |
 
-### 2. **gRPC Fundamentals**
-- **Protocol Buffers**: Schema-first development
-- **Type Safety**: Compile-time checking
-- **Code Generation**: Auto-generate client/server code
-- **Performance**: Binary serialization, HTTP/2 multiplexing
+### 2. Microservices Architecture
 
-### 3. **NestJS gRPC Integration**
-- **@GrpcMethod**: Decorator để define gRPC endpoints
-- **ClientGrpc**: gRPC client injection
-- **RpcException**: gRPC error handling
-- **Microservice Bootstrap**: createMicroservice() for gRPC server
+- **Service Separation:**  
+  Phân tách rõ ràng giữa business logic (xử lý nghiệp vụ) và API layer (lớp giao tiếp với client). Điều này giúp codebase gọn gàng, dễ bảo trì, dễ mở rộng.
+- **Independent Deployment:**  
+  Mỗi service là một ứng dụng độc lập, có thể build, deploy, scale riêng mà không phụ thuộc các service khác.
+- **Technology Diversity:**  
+  Các service có thể sử dụng ngôn ngữ lập trình, framework, công nghệ khác nhau miễn là tuân thủ chuẩn giao tiếp (ví dụ: gRPC).
+- **Fault Isolation:**  
+  Nếu một service gặp lỗi (crash, downtime), các service còn lại vẫn hoạt động bình thường, giúp tăng độ ổn định toàn hệ thống.
 
-### 4. **Database Design Patterns**
-- **Prisma ORM**: Type-safe database access
-- **Schema Migration**: Version control for database
-- **Connection Pooling**: Efficient database connections
-- **Indexing Strategy**: Optimize lookup performance
+### 3. gRPC Fundamentals
 
-### 5. **Error Handling & Validation**
-- **gRPC Status Codes**: Standardized error codes
-- **DTO Validation**: class-validator for input validation
-- **Exception Propagation**: Error handling across services
-- **Graceful Degradation**: Handle service unavailability
+- **Protocol Buffers (Protobuf):**  
+  Phát triển theo hướng schema-first (định nghĩa cấu trúc dữ liệu trước), giúp đồng bộ và sinh code tự động cho cả client và server.
+- **Type Safety:**  
+  Kiểm tra kiểu dữ liệu ngay khi biên dịch (compile-time checking), giảm lỗi runtime.
+- **Code Generation:**  
+  Tự động sinh mã nguồn cho client/server từ file .proto, tiết kiệm thời gian, tránh sai sót khi viết tay.
+- **Performance:**  
+  Dữ liệu truyền ở dạng nhị phân (binary serialization), kết hợp HTTP/2 multiplexing nên tốc độ rất nhanh, tiết kiệm băng thông.
 
-## 🚀 Cách chạy project
+### 4. NestJS gRPC Integration
+
+- **@GrpcMethod:**  
+  Decorator trong NestJS để định nghĩa các gRPC endpoint (method) giống như REST controller.
+- **ClientGrpc:**  
+  Cơ chế inject gRPC client vào service để gọi sang service khác qua gRPC.
+- **RpcException:**  
+  Công cụ chuẩn để xử lý và trả về lỗi gRPC theo đúng format, dễ debug và bắt lỗi phía client.
+- **Microservice Bootstrap:**  
+  Sử dụng hàm `createMicroservice()` để khởi tạo gRPC server trong NestJS, giúp tách biệt với HTTP server.
+
+### 5. Database Design Patterns
+
+- **Prisma ORM:**  
+  Truy cập database an toàn kiểu dữ liệu (type-safe), tự động generate type cho TypeScript, dễ dùng và hiện đại.
+- **Schema Migration:**  
+  Quản lý version cho schema database, hỗ trợ migrate (nâng cấp/cập nhật) cấu trúc bảng dễ dàng.
+- **Connection Pooling:**  
+  Tối ưu hiệu suất bằng cách tái sử dụng (reuse) các kết nối database, giảm chi phí khi tạo mới một connect.
+- **Indexing Strategy:**  
+  Định nghĩa các chỉ mục (index) hợp lý để tối ưu tốc độ truy vấn, đặc biệt với các field dùng để tìm kiếm như short_code.
+
+### 6. Error Handling & Validation
+
+- **gRPC Status Codes:**  
+  Chuẩn hóa mã lỗi trả về giữa các service (ví dụ: NOT_FOUND, UNAVAILABLE, INVALID_ARGUMENT...), dễ xử lý ở cả hai phía.
+- **DTO Validation:**  
+  Sử dụng class-validator để kiểm tra dữ liệu đầu vào (input validation), đảm bảo chỉ nhận dữ liệu hợp lệ.
+- **Exception Propagation:**  
+  Truyền và xử lý exception giữa các service, giúp trace error đầy đủ, dễ debug trong môi trường phân tán.
+- **Graceful Degradation:**  
+  Thiết kế hệ thống để có thể “chấp nhận lỗi” (ví dụ: một service tạm thời không khả dụng, hệ thống vẫn trả về thông báo phù hợp thay vì crash toàn bộ).
+
+
+## 🚀 Cách run project
 
 ### 1. Prerequisites
 ```bash
@@ -262,8 +310,8 @@ curl -I http://localhost:3000/aB3fGh8k
 ```
 Request Size:     gRPC: ~50 bytes  |  REST: ~200 bytes
 Response Size:    gRPC: ~30 bytes  |  REST: ~150 bytes
-Serialization:    gRPC: 2-10x faster than JSON
-Network Overhead: gRPC: ~30% less than HTTP/1.1
+Serialization:    gRPC: 2-10x nhanh hơn JSON
+Network Overhead: gRPC(HTTP/2): ít hơn ~30% so với HTTP/1.1
 ```
 
 ### Database Optimization
@@ -294,22 +342,6 @@ Load Balancer
       ↓                ↓                ↓
         Database Cluster (Read Replicas)
 ```
-
-
-## 🎓 Kết luận
-
-Project này giúp hiểu sâu về:
-- **Microservices communication** với gRPC
-- **Protocol Buffers** cho type-safe APIs
-- **Service-oriented architecture** design
-- **Database optimization** cho read-heavy workloads
-- **Error handling** trong distributed systems
-
-Đây có thể sẽ là foundation cơ bản để tôi để xây dựng các hệ thống microservices phức tạp hơn trong tương lai! 🚀
-
----
-
-**Tech Stack**: NestJS, gRPC, Protocol Buffers, PostgreSQL, Prisma, Docker, TypeScript
 
 ## 📝 API Documentation
 
@@ -383,9 +415,10 @@ Error: Prisma schema file not found
 ```
 Error: url must be a valid URL
 ```
-**Solution:** Đảm bảo URL bắt đầu với `http://` hoặc `https://`
+**Solution:** Đảm bảo URL bắt đầu với `http://` hoặc `https://` (Do DTO tôi validate khá strict)
 
 ## 📚 Learning Resources
+### **Tech Stack tôi sử dụng**: NestJS, gRPC, Protocol Buffers, PostgreSQL, Prisma, Docker và TypeScript
 
 ### gRPC & Protocol Buffers
 - [gRPC Official Documentation](https://grpc.io/docs/)
@@ -401,3 +434,17 @@ Error: url must be a valid URL
 - [Prisma Documentation](https://www.prisma.io/docs/)
 - [PostgreSQL Performance](https://www.postgresql.org/docs/current/performance-tips.html)
 - [Database Indexing Strategies](https://use-the-index-luke.com/)
+
+## 🎓 Kết luận
+
+Project này có thể giúp tôi hiểu hơn về:
+- **Microservices communication** với gRPC
+- **Protocol Buffers** cho type-safe APIs
+- **Service-oriented architecture** để design
+- **Database optimization** cho read-heavy workloads
+- **Error handling** trong distributed systems
+
+> **Feeling của tôi sau khi hoàn thành mini project này:**  
+> Đây có thể sẽ là foundation cơ bản để tôi để xây dựng các system microservices phức tạp hơn trong tương lai.
+>
+> Bạn hoàn toàn có thể sử dụng project này để phục vụ cho mục đích nộp bài về môn Lập trình mạng ở UTH. Và nếu muốn cùng phát triển và mở rộng project này thì có thể liên hệ tôi.
